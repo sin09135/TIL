@@ -111,12 +111,11 @@ grouped.agg({'fare' : ['min', 'max'], 'age' : ['mean', 'std']}) # 각기 다른 
 
 ```python
 grouped.filter(lambda x : len(x) >= 200).head() #데이터의 개수 200개 이상만 필터링
-grouped.filter(lambda x: x.age.mean() < 30).tail() #age 열 평균이 30보다 작은것만 필터링
+grouped.filter(lambda x: x.age.mean() < 30).tail() #age 열 평균이 30보다 작은 데이터만 필터링
 ```
 
 - 그룹별 데이터 개수
 
 ```python
-grouped.apply(len)
+grouped.apply(len) 
 ```
-
