@@ -1,8 +1,8 @@
-# Data preprocessing
+# Data Preprocessing
 
 pandas 모듈 사용해서 타이타닉 데이터 결측값 채우기
 
-## 1. Missing Value
+## Missing Value
 
 ## 1) 데이터셋 불러오기
 
@@ -29,15 +29,17 @@ df.head(10).isnull() -> 결측치를 'True' 로 출력
 ```
 
 ```python
+# 결측치 값 포함하여 빈도분석
 df['deck'].value_counts(dropna = False) -> 결측치 값 포함하여 빈도분석
 ```
 
-```
+```python
+# 빈도분석
 df['deck'].value_counts()
 ```
 
 ```python
-# 열별로 결측치 개수 확인(axis = 0): 행, (axis = 1) : 열
+# 열별로 결측치 개수 확인(axis = 0): 열, (axis = 1) : 행
 df.isnull().sum(axis = 0) -> 결측치 개수 열별로 세기
 >>> age 177, deck = 688, embark_town = 2
 ```
@@ -50,7 +52,7 @@ df.isnull().sum(axis = 0) -> 결측치 개수 열별로 세기
 
 ## 3) 결측치 삭제
 
-`dropna(thresh,subset)`
+- `dropna(thresh,subset)`
 
 ```python
 # 300개 이하 측정값이 있는 열(column) 삭제
@@ -65,7 +67,7 @@ df.dropna(subset = ['age'],how = 'any',axis = 0)
 
 
 
-### 4) 결측치 치환
+## 4) 결측치 치환
 
 - 연속형 데이터 치환
   - 평균값으로 치환
@@ -76,7 +78,7 @@ TD['age'].fillna(int(df['age'].mean(axis = 0)), inplace = True)
 
 - 명목형 데이터 치환
 
-  `idxmax()`최빈값으로 치환
+  `idxmax()`  최빈값으로 치환
 
 ```python
 most_freq = df['embark_town'].value_counts(dropna = True).idxmax()
@@ -87,13 +89,27 @@ most_freq = df['embark_town'].value_counts(dropna = True).idxmax()
 df['embark_town'].fillna(most_embark_town, inplace = True)
 ```
 
-​	`method = ffill`이전 데이터 포인트로 치환
+- `method = ffill`이전 데이터 포인트로 치환
 
 ```
 TD['embarked'].fillna(most_freq, inplace = True)
 ```
 
 
+
+## 5) 결측치 시각화
+
+- `missingno`
+
+```python
+import missingno as msno
+
+msno.matrix(df,
+         figsize = (15,7),
+         color = (0.8,0.2,0.2));
+```
+
+![](/Users/kimsinwoo/Downloads/Unknown-3.png)
 
 
 
