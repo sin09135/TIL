@@ -62,8 +62,86 @@
 
     ![](/Users/kimsinwoo/Downloads/Unknown-2.png)
 
-- **다중 회귀 분석**
-  - **독립변수가 2개 이상**
+- **다중 회귀 분석**(독립변수 2개 이상)
+  
+  - Load Data
+  
+  ```python
+  import seaborn as sns
+  DF2 = sns.load_dataset('iris') # 꽃 데이터
+  
+  DF2.info()
+  ```
+  
+  - 상관계수
+  
+  ```
+  DF2.corr()
+  ```
+  
+  - 시각화
+  
+  ```
+  import matplotlib.pyplot as plt
+  import seaborn as sns
+  
+  sns.pairplot(hue = 'species', data = DF2)
+  plt.show()
+  ```
+  
+  - Modeling
+  
+  ```python
+  import statsmodels.formula.api as smf
+  
+  Model = smf.ols(formula = 'sepal_length ~ sepal_width + petal_length + petal_width',data = DF2)
+  
+  Model_mr = Model.fit()
+  ```
+  
+  - Modeling Summary
+  
+  ```python
+  Model_mr.summary(alpha = 0.05)
+  ```
+  
+  ![](/Users/kimsinwoo/Downloads/다중회귀분석.png)
+  
+  - 다중공선성(Multicollinearity)
+  
+    - 공성성(Colinearity) : 독립변수가 다른 독립변수로 잘 예측되는 경우 또는 서로 상관이 높은 경우
+    - 다중공선성 : 독립변수가 다른 여러 개의 독립변수들로 잘 예측되는 경우
+  
+    1) 독립변수 확인
+  
+    ```python
+    Model.exog_names
+    ```
+  
+    2. 다중공선성 진단
+       	- 분산 팽창 계수(VIF) : 보통 10보다 크면 다중공선성이 있다고 판단
+  
+    ```python
+    variance_inflation_factor(Model.exog, 1) #sepal_width
+    variance_inflation_factor(Model.exog, 2) #petal_length
+    variance_inflation_factor(Model.exog, 3) #petal_width
+    
+    DF2.corr() #상관계수 확인
+    ```
+  
+    3. 다중공선성 해결
+  
+       - VIF 가 큰 독립변수 제거 후 모델링
+  
+       ```python
+       Model_VIF = smf.ols(formula = 'sepal_length ~ sepal_width + petal_length',data = DF2).fit()
+       ```
+  
+       ```python
+       Model_VIF.summary()
+       ```
+  
+       
 
 
 
