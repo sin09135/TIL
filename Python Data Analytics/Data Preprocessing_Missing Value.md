@@ -85,13 +85,13 @@ most_freq = df['embark_town'].value_counts(dropna = True).idxmax()
 # 결측치를 제외하고 개수 세서 최빈값 설정
 ```
 
-```
-df['embark_town'].fillna(most_embark_town, inplace = True)
+```python
+df['embark_town'].fillna(most_freg, inplace = True)
 ```
 
 - `method = ffill`이전 데이터 포인트로 치환
 
-```
+```python
 TD['embarked'].fillna(most_freq, inplace = True)
 ```
 

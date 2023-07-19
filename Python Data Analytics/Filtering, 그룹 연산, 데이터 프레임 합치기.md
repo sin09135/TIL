@@ -40,6 +40,10 @@ df.loc[filter2,['age','sex','alone']]
 
 
 
+#### 3) `query`
+
+
+
 ## 데이터프레임 합치기
 
 #### 1) `concat`
@@ -107,7 +111,7 @@ grouped.agg({'fare' : ['min', 'max'], 'age' : ['mean', 'std']}) # 각기 다른 
 
 
 
-#### 4) `filter`
+#### 3) `filter`
 
 ```python
 grouped.filter(lambda x : len(x) >= 200).head() #데이터의 개수 200개 이상만 필터링
