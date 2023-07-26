@@ -55,7 +55,7 @@
 <script>
         var x = 10;
         function displayNumber(){
-            // var y; 가 생략
+            // var y; 가 생략됨
             console.log("x is " + x);
             console.log("x is " + y); //다른 언어에서는 에러 발생
             var y = 20;
