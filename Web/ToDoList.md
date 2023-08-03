@@ -86,7 +86,7 @@ Quit the server with CONTROL-C.
 
 #### 2) 첫페이지 URL
 
-> 사용자가 접근했을 때, urls.py 에서 app으로 넘겨주기
+> 사용자가 접근했을 때, urls.py 에서 mytodoapp으로 넘겨주기
 
 **ToDoList > ToDoList > urls.py**
 
