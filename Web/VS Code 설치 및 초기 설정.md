@@ -6,7 +6,7 @@ Live Server를 설치하면 코드 변경 시 실시간으로 브라우저에 �
 
 ## 1. Visual Studio 다운로드 및 설치 방법
 
-1.  Microsoft Visual Studio 웹사이트에서, 사용하는 OS에 맞게 Visual Studio Code를 다운 
+1.  Microsoft Visual Studio 웹사이트에서, 사용하는 OS에 맞게  Visual Studio Code를 다운 
 
  https://visualstudio.microsoft.com/ko/
 
