@@ -243,18 +243,26 @@ with open("tistory.html","w",encoding="utf8") as f:
 
 https://datapilots.tistory.com/ 페이지를 html 파일을 만들었을 때, 404 클라이언트 에러가 출력된다.
 
+### 2) User - Agent 가져오기
+
+-  크롬 검색 창에 `what is my user agent` 를 검색한다.
+
+![](/Users/kimsinwoo/Downloads/what is my user agent.png)
+
+- `내 사용자 에이전트` 의 해당 내용을 복사한 후, 크롤링에 활용한다.
 
 
-### 2) `User-Agent` 사용
+
+### 3) `User-Agent` 사용
 
 ```python
 import requests
 
 # User-Agent
-headers = {"User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
+custom_header = {"User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"}
 
-url = "http://datapilots.tistory.com/"
-res = requests.get(url, headers=headers)
+url = "http://datapilots.tistory.com/" # 티스토리는 User-Agent 없어도 잘 출력되긴 하지만, 임의로 선택
+res = requests.get(url, headers=custom_header)
 res.raise_for_status() 
 
 with open("Datapilots_tistory.html","w",encoding="utf8") as f:
@@ -271,7 +279,9 @@ Datapilots_tistory.html 파일이 잘 생성된 것을 확인할 수 있다.
 
 ### 5. BeautifulSoup 사용
 
-### 네이버 웹툰 실시간 차트 스크래핑
+### 음악  차트 실시간 스크래핑
+
+#### 1) 라이브러리 준비
 
 - 터미널에 라이브러리 설치
 
@@ -280,9 +290,48 @@ pip install bs4
 pip install lxml
 ```
 
+Beautifulsoup4(bs4) : 웹 스크래핑을 위한 라이브러리
+
+lxml : 파이썬용 xml, html를 처리하는 라이브러리
+
+웹 스크래핑에 필요한 두 라이브러리를 설치한다.
 
 
-- `soup = BeautifulSoup(res.text, "lxml")`
+
+- 라이브러리 임포트
+
+```python
+import requests
+from bs4 import BeautifulSoup
+```
+
+설치한 라이브러리를 임포트 해준다.
+
+
+
+#### 2) 음악 차트 불러오기
+
+- 실시간 순위 차트 html 파악하기
+
+![](/Users/kimsinwoo/Downloads/table.png)
+
+
+
+![](/Users/kimsinwoo/Downloads/p 태스.png)
+
+
+
+`<table class = "list_trackList byChart">` 
+
+​	`<tbody>` 
+
+ 		`<tr>`
+
+​			`<p class = 'title'><a> 제목 </a></p>` 
+
+
+
+-  p 출력되는지 테스트
 
 ```python
 import requests
@@ -290,11 +339,104 @@ from bs4 import BeautifulSoup
 
 
 # 네이버 웹툰
-url = "https://comic.naver.com/index"
+url = "https://music.bugs.co.kr/chart"
 res = requests.get(url)
 res.raise_for_status()
 
 soup = BeautifulSoup(res.text, "lxml")
-print(soup.title) #네이버 웹툰의 title 태그 가져오기
+tbody = soup.find('tbody')
+
+
+p = tbody.find_all("p",class_ = 'title') 
+print(p)
 ```
 
+
+
+![](/Users/kimsinwoo/Downloads/p 출력.png)
+
+p 태그 정상 출력됨을 확인할 수 있다.
+
+
+
+- 반복문 구성
+
+```python
+# 벅스 뮤직 차트
+url = "https://music.bugs.co.kr/chart"
+res = requests.get(url)
+res.raise_for_status() # 응답코드 200 인지 확인
+
+soup = BeautifulSoup(res.text, "lxml")
+tbody = soup.find('tbody') # 가장 처음 나오는 tbody
+
+result = []
+for p in tbody.find_all("p",class_ = 'title'): #find_all은 리스트 형태임
+    result.append(p.get_text().replace('\n',''))
+    
+print(result)
+```
+
+
+
+- 결과 화면
+
+![](/Users/kimsinwoo/Downloads/음악차트.png)
+
+
+
+#### 3) 데이터프레임으로 출력
+
+- 함수1 : 음원차트 크롤링
+- 함수2 : 데이터프레임으로 변환
+- 함수3:  main 함수(html 문서 가져오기 ~ 데이터프레임 출력)
+
+
+
+```python
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+def create_DF(result_list): # 데이터 프레임으로 변환
+    result_df = pd.DataFrame({"title" : result_list})
+
+    return result_df
+
+def crawler(soup): # 음원차트 크롤링
+    
+    tbody = soup.find("tbody")
+    result = []
+    for p in tbody.find_all("p", class_ = "title"): 
+        result.append(p.get_text().replace('\n', ''))
+
+    return result
+
+def main(): # 메인 함수
+
+    # 요청 url 변수에 담긴 url의 html 문서를 출력
+    custom_header = {
+        'user-agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
+    
+    url = "https://music.bugs.co.kr/chart"
+    req = requests.get(url, headers = custom_header)
+    soup = BeautifulSoup(req.text, "html.parser")
+    result = crawler(soup) # 크롤링 함수 실행
+    df = create_DF(result) # 데이터프레임으로 만들기
+    print(df)
+    df.to_csv("result.csv", index=False) # csv 파일로 저장
+
+if __name__ == "__main__":
+    main()
+```
+
+
+
+- 결과 확인
+
+<img src="/Users/kimsinwoo/Downloads/데이터프레임으로 완성.png" style="zoom:50%;" />
+
+
+
+<img src="/Users/kimsinwoo/Downloads/csv 파일 생성.png" style="zoom:50%;" />
