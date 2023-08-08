@@ -86,7 +86,7 @@ https://www.worldometers.info/world-population/population-by-country
 
 <img src="/Users/kimsinwoo/Downloads/worldmeter_crawl 생성.png" style="zoom:50%;" />
 
-spiders > Worldmeter_crawl.Py 를 생성한다.
+`spiders > Worldmeter_crawl.py` 를 생성한다.
 
 앞으로 이 파일에 크롤링 코드를 저장할 것이다.
 
@@ -94,5 +94,125 @@ spiders > Worldmeter_crawl.Py 를 생성한다.
 
 #### Step1 . country, population, Yearly Change 스크래핑
 
-##### 1) 
+##### scrapy 기본 구성
+
+```python
+import scrapy
+
+class WorldometerItem(scrapy.Item):
+    # 크롤링 코드 입력
+    def parse(self, response):
+      
+      yield {
+           # yield 키워드를 사용하여 데이터를 하나씩 반환하면 Scrapy가 이를 딕셔너리 형태로 반환한다.
+        }
+
+```
+
+파일을 구성하는 기본 구조는 다음과 같다.
+
+
+
+- title element 를 통해 구조를 파악해보자
+
+![](/Users/kimsinwoo/Downloads/scrapy_title.png)
+
+title 을 `copy xpath` 로 복사해준다.
+
+
+
+- 코드 구현
+
+```python
+import scrapy
+
+
+class WorldometerSpider(scrapy.Spider):
+    
+    #크롤링 할 도메인 지정
+    name = "worldometer"
+    allowed_domains = ["www.worldometers.info"]
+    
+    # 크롤링을 시작할 웹페이지 지정
+    start_urls = ["https://www.worldometers.info/world-population/population-by-country"]
+
+    def parse(self, response):
+        
+        # title 크롤링 코드
+        title = response.xpath('//h1/text()').get()
+  
+        yield {
+            'title' : title 
+        }
+```
+
+복사한 코드를 `title = response.xpath('복사한 코드').get()`  삽입하여 크롤링 코드를 입력하고 `yield{}` 에 입력하여 딕셔너리 형태로 처리한다.
+
+- `scrapy crawl 프로젝트이름`  출력
+
+```bash
+$ scrapy crawl worldometer
+```
+
+![](/Users/kimsinwoo/Downloads/title 결과 확인.png)
+
+title이 딕셔너리 형태로 출력되는 것을 확인할 수 있다.
+
+
+
+##### 1) country, population, Yearly Change 크롤링
+
+- 구조 파악
+
+  >  `command + F` 로 xpath 경로를 입력하면서 맞는 경로를 찾는다.
+
+  - country :  //table/tbody/tr/td[2]/a/text()
+
+  ![](/Users/kimsinwoo/Downloads/country xpath.png)
+
+  - Population : //table/tbody/tr/td[3]/a/text()
+
+  ![](/Users/kimsinwoo/Library/Mobile Documents/com~apple~Preview/Documents/population_html(only).png)
+
+  - Yearly Change : //table/tbody/tr/td[4]/a/text()
+
+  ![](/Users/kimsinwoo/Downloads/yearly_html.png)
+
+
+
+- `worldmeter_crawl.py` 코드 구현
+
+- worldmeter_crawl.py
+
+```python
+import scrapy
+
+class WorldometerSpider(scrapy.Spider):
+    
+    name = "worldometer"
+    allowed_domains = ["www.worldometers.info"]
+    start_urls = ["https://www.worldometers.info/world-population/population-by-country"]
+
+    def parse(self, response):
+       
+        # country, population, yearly_change 코드
+        rows = response.xpath('//table/tbody/tr')
+        
+        for row in rows:
+            country = row.xpath('./td[2]/a/text()').get()
+            population = row.xpath('./td[3]/text()').get()
+            yearly_change = row.xpath('./td[4]/text()').get()
+
+            yield {
+                'country': country,
+                'population': population,
+                'yearly_change': yearly_change
+            }
+```
+
+
+
+- 출력 결과
+
+![](/Users/kimsinwoo/Downloads/country,population,change 출력.png)
 
