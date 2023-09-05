@@ -4,10 +4,13 @@ def replaceData(numData): # numData	2차원 정수 배열
     retData = [] # 조건에 따라서 전처리된 2차원 배열
 
     ###########   여기부터 코딩 (1) ---------------->
-
-
-
-
+    retData = numData[:]
+    for i in range(ARRAY_LENGTH):
+        for k in range(ARRAY_LENGTH):
+                 if retData[i][k] < 0:
+                        retData[i][k] = 0
+                 if retData[i][k] > 100:
+                        retData[i][k] = retData[i][k] % 100
     ###########   <-------------- 여기까지 코딩 (1)
 
     return retData
@@ -18,10 +21,10 @@ def getMaxSum(numData): # 요구 사항에 맞춰 처리된 2차원 정수 배�
     maxSum = 0 # 최대합
 
     ###########   여기부터 코딩 (2) ---------------->
-
-
-
-
+    for i in range(ARRAY_LENGTH - 1):
+        for k in range(ARRAY_LENGTH -1):
+                hap = numData[i][k] + numData[i][k+1] + numData[i+1][k] + numData[i+1][k+1]
+        return hap
     ###########   <-------------- 여기까지 코딩 (2)
 
     return maxSum
