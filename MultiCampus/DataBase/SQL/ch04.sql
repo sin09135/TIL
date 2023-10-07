@@ -288,9 +288,196 @@ ON A.customernumber = C.customernumber
 GROUP BY 1, 2
 ;
 
-
+-- p.115 
 -- 국가별 Top Product 및 매출
+-- 미국의 연도별 Top5 차량 모델 추출을 부탁드립니다. 
+-- order 테이블, orderdetails 테이블, customers 테이블
+-- products 테이블 
+USE classicmodels;
 
+CREATE TABLE product_sales AS 
+SELECT 
+	D.productname
+    , SUM(quantityordered * priceeach) AS sales 
+FROM orders A
+LEFT 
+JOIN customers B
+ON A.customernumber = B.customernumber 
+LEFT 
+JOIN orderdetails C
+ON A.ordernumber = C.ordernumber 
+LEFT
+JOIN products D
+On C.productcode = D.productcode 
+WHERE B.country = 'USA'
+GROUP BY 1
+;
+-- 매출액 기준) 차량모델을 찾는 것이 핵심코드 
+-- ERD 기준, customers      products
+-- 1차 제외 : 주문안한 고객 
+-- 2차 제외 : 차량모델 코드 중 주문이 없는 차량모델 제외
+-- 3차 제외 : USA 제외 customer 테이블 참조
+
+SELECT * 
+FROM (
+	SELECT *
+    , ROW_NUMBER() OVER(ORDER BY sales DESC) RNK
+    FROM product_sales) A
+WHERE RNK <= 5
+ORDER BY RNK;
+
+SELECT * FROM product_sales;
+
+-- [Churn Rate (%)] 
+-- Churn : max(구매일, 접속일) 이후 일정 기간 (ex. 3개월)
+-- 구매, 접속하지 않은 상태
+SELECT 
+	MAX(orderdate) mx_order -- 마지막 구매일
+    , MIN(orderdate) mn_order -- 최초 구매일
+FROM orders;
+
+-- 2005-06-01일 기준으로 각 고객의 마지막 구매일이 며칠 소요되는가?  
+SELECT
+	customernumber
+    , MIN(orderdate) `최초 구매일`
+	, MAX(orderdate) `마지막 구매일`
+FROM orders
+GROUP BY 1;
+
+-- DATEDIFF 사용 (date1, date2) 
+SELECT DATEDIFF('2003-01-09', '2004-11-05');
+SELECT DATEDIFF('2004-11-05', '2004-11-01');
+
+-- 전체 코드 확인 
+SELECT 
+	customernumber
+    , MAX(orderdate) MX_ORDER -- 이 테이블의 마지막 구매일 (전 고객 기준)
+                              -- GROUP BY 마지막 구매일 (각 고객 기준)
+FROM orders
+GROUP BY 1;
+
+SELECT 
+	customernumber
+    , MX_ORDER 
+    , '2005-06-01' -- 전 고객 대상 마지막 구매일
+    , DATEDIFF('2005-06-01', MX_ORDER) DIFF 
+FROM (
+	SELECT 
+		customernumber
+		, MAX(orderdate) MX_ORDER 
+	FROM orders
+	GROUP BY 1
+) BASE
+;
+
+
+-- p.119 
+-- 조건 DIFF가 90일 이상이면 Churn이라고 가정한다. Churn 또는 Non Churn 
+-- IF 조건문, 
+-- 메인쿼리 : 90일 이상이면 Churn이라고 가정한다. CHURN 또는 NON-CHURN
+-- 서브쿼리 : DIFF를 구하는 것이 서브쿼리
+SELECT 
+	* 
+    , CASE WHEN DIFF >= 90 THEN 'CHURN' ELSE 'NON-CHURN' END churn_type
+FROM (
+	SELECT 
+		customernumber
+		, MX_ORDER 
+		, '2005-06-01' -- 전 고객 대상 마지막 구매일
+		, DATEDIFF('2005-06-01', MX_ORDER) DIFF 
+	FROM (
+		SELECT 
+			customernumber
+			, MAX(orderdate) MX_ORDER 
+		FROM orders
+		GROUP BY 1
+	) BASE 
+) BASE2
+;
+
+-- CHURN RATE 요약 테이블 집계
+SELECT 
+    CASE WHEN DIFF >= 90 THEN 'CHURN' ELSE 'NON-CHURN' END churn_type
+    , COUNT(DISTINCT customernumber) N_CUS
+FROM (
+	SELECT 
+		customernumber
+		, MX_ORDER 
+		, '2005-06-01' -- 전 고객 대상 마지막 구매일
+		, DATEDIFF('2005-06-01', MX_ORDER) DIFF 
+	FROM (
+		SELECT 
+			customernumber
+			, MAX(orderdate) MX_ORDER 
+		FROM orders
+		GROUP BY 1
+	) BASE 
+) BASE2
+GROUP BY 1
+;
+
+SELECT 69/(69+29);
+
+-- CHURN 고객이 가장 많이 구매한 Productline
+CREATE TABLE churn_list AS 
+SELECT 
+	CASE WHEN DIFF >= 90 THEN 'CHURN ' ELSE 'NON-CHURN' END CHURN_TYPE
+    , customernumber
+FROM 
+	(
+		SELECT 
+			customernumber
+			, mx_order
+			, '2005-06-01' END_POINT
+			, DATEDIFF('2005-06-01', mx_order) DIFF
+		FROM
+			(
+				SELECT 
+					customernumber
+					, max(orderdate) mx_order
+				FROM orders
+				GROUP BY 1
+			) BASE
+    ) BASE
+;
+
+SELECT * FROM churn_list;
+
+-- Churn 고객은 어떤 카테고리의 상품을 많이 구매했느냐?
+SELECT * FROM productlines;
+
+-- p.122 
+SELECT 
+	C.productline
+    , COUNT(DISTINCT B.customernumber) BU
+FROM orderdetails A
+LEFT 
+JOIN orders B
+ON A.ordernumber = B.ordernumber
+LEFT 
+JOIN products C
+ON A.productcode = C.productcode
+GROUP BY 1
+;
+
+-- Churn Type, Product Line별 구매자 수 
+SELECT 
+	D.churn_type
+	, C.productline
+    , COUNT(DISTINCT B.customernumber) BU
+FROM orderdetails A
+LEFT 
+JOIN orders B
+ON A.ordernumber = B.ordernumber
+LEFT 
+JOIN products C
+ON A.productcode = C.productcode
+LEFT 
+JOIN churn_list D 
+ON B.customernumber = D.customernumber
+GROUP BY 1, 2
+ORDER BY 1, 3 DESC 
+;
 
 -- 4교시 : 오전 3교시 배운 내용 복습, 블로그에 잘 정리! 
 -- 8교시 : 블로그 초안 포함 링크 공유 (전원 필히 해주세요!) 
