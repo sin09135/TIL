@@ -88,5 +88,5 @@ sns.heatmap(DF.corr(),
 plt.show()
 ```
 
-![](/Users/kimsinwoo/Downloads/Unknown.png)
+![](/Users/kimsinwoo/Downloads/이미지.png)
 
