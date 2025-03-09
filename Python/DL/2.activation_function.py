@@ -197,4 +197,18 @@ y = forward(network, x)
 print(y)
 
 
-# %%
+# %% 소프트 맥스 함수(분류, 어느 클래스에 속할 확률 계산)
+# 주의점 큰 값을 계산할 시 문제 발생
+a = np.array([1010,1000,999])
+print(np.exp(a)/np.sum(np.exp(a))) # nan,nan,nan 값이 나옴(제대로 계산 x)
+
+c= np.max(a)
+np.exp(a-c)/np.sum(np.exp(a-c))
+
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a-c) # 오버플로 대책
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a/sum_exp_a
+
+    return y
